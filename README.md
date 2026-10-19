@@ -4,7 +4,7 @@ A high-performance personal portfolio showcasing 5 software engineering projects
 
 - **Developer:** Ibnu Thyra Magani
 - **School:** BINUS SCHOOL Semarang (Cambridge International Curriculum)
-- **Live (Vercel):** [https://ibnu-portfolio-lime.vercel.app/](https://ibnu-portfolio-lime.vercel.app/)
+- **Live (Vercel):** [https://ibnu-thyra-magani-portfolio.vercel.app/](https://ibnu-thyra-magani-portfolio.vercel.app/) (or [https://ibnu-thyra-magani.vercel.app/](https://ibnu-thyra-magani.vercel.app/))
 - **Live (GitHub Pages):** [https://lasserafim.github.io/ibnu-thyra-magani-portfolio/](https://lasserafim.github.io/ibnu-thyra-magani-portfolio/)
 ---
 
