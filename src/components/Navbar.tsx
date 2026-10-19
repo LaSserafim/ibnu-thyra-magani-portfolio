@@ -60,7 +60,7 @@ export const Navbar: React.FC<NavbarProps> = ({ theme, setTheme }) => {
               Development Workflow
             </a>
             <a href="#about" className="hover:text-white transition-colors cursor-pointer">
-              About
+              Technical Interests
             </a>
             <a href="#contact" className="hover:text-white transition-colors cursor-pointer">
               Contact

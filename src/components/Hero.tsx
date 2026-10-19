@@ -17,9 +17,9 @@ export const Hero: React.FC<HeroProps> = ({ theme }) => {
     <section id="top" className="relative pt-36 pb-20 overflow-hidden">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* Simple Role Tag */}
+        {/* Focus Areas Tag */}
         <div className="text-xs font-mono text-neutral-400 uppercase tracking-widest mb-3">
-          Software &bull; Mathematics &bull; Computer Vision
+          Data Science &bull; Probability &bull; FinTech &bull; Cryptography
         </div>
 
         {/* Headline */}
@@ -29,11 +29,15 @@ export const Hero: React.FC<HeroProps> = ({ theme }) => {
 
         {/* Bio Paragraph */}
         <p className="text-base sm:text-lg text-neutral-300 font-body leading-relaxed mb-8">
-          I am a high school student and developer at{' '}
+          I am a high school student and software developer at{' '}
           <span className="text-white font-medium">BINUS SCHOOL Semarang</span>{' '}
-          (Cambridge International curriculum). I build web applications, quantitative tools, and interactive
-          educational simulations. Below is a technical breakdown of five projects I recently engineered,
-          including their architecture, live demos, repositories, and how I incorporated AI coding tools into the development process.
+          (Cambridge International curriculum). My primary interests in information technology focus on{' '}
+          <strong className="text-white font-semibold">data science</strong>,{' '}
+          <strong className="text-white font-semibold">probability &amp; stochastic modeling</strong>,{' '}
+          <strong className="text-white font-semibold">financial technology</strong>, and{' '}
+          <strong className="text-white font-semibold">cryptography</strong>.
+          Below is a technical breakdown of five software projects I recently built,
+          including their architecture, live demos, repositories, and development workflows.
         </p>
 
         {/* Clean Project Categories Overview */}

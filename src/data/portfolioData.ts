@@ -20,6 +20,13 @@ export interface Project {
   };
 }
 
+export interface TechnicalInterest {
+  title: string;
+  tag: string;
+  summary: string;
+  topics: string[];
+}
+
 export interface ProfileData {
   name: string;
   title: string;
@@ -27,12 +34,7 @@ export interface ProfileData {
   curriculum: string;
   location: string;
   about: string;
-  competitions: Array<{
-    title: string;
-    result: string;
-    field: string;
-    summary: string;
-  }>;
+  technicalInterests: TechnicalInterest[];
   targetPrograms: Array<{
     institution: string;
     program: string;
@@ -48,18 +50,34 @@ export const PROFILE_DATA: ProfileData = {
   location: "Semarang, Indonesia",
   about:
     "High school student interested in computer systems, quantitative analysis, and interactive educational software. I use modern web standards, Python, and AI coding tools to design, build, and deploy functional applications.",
-  competitions: [
+  technicalInterests: [
     {
-      title: "Bandung International Science Fair (BISF)",
-      result: "Silver Medal",
-      field: "Physics & Engineering",
-      summary: "Built and tested an engineering hardware setup applying mechanical physics principles.",
+      title: "Data Science",
+      tag: "Analytics & Pipelines",
+      summary:
+        "Extracting patterns from high-volume, multi-source datasets through automated ETL pipelines, vectorized operations in NumPy/Pandas, and reproducible exploratory analysis.",
+      topics: ["Data Pipelines & Ingestion", "Exploratory Analysis", "Feature Extraction", "Empirical Validation"],
     },
     {
-      title: "American Mathematics Olympiad (AMO)",
-      result: "Bronze Medal",
-      field: "Mathematics",
-      summary: "Competed in high-school level discrete mathematics, geometry, and combinatorics.",
+      title: "Probability & Stochastic Modeling",
+      tag: "Mathematics & Simulation",
+      summary:
+        "Formulating stochastic calculus and probability distributions to quantify uncertainty, simulate future scenarios, and calculate tail-risk bounds.",
+      topics: ["Geometric Brownian Motion", "Monte Carlo Simulations", "Probability Distributions", "Tail-Risk Quantification"],
+    },
+    {
+      title: "Financial Technology",
+      tag: "Market Microstructure",
+      summary:
+        "Engineering real-time market data platforms, 15-level orderbook visualizers, and algorithmic quantitative valuation frameworks for capital markets.",
+      topics: ["Order Flow Imbalance (OFI)", "Depth of Market (DOM)", "BrokSum HHI Concentration", "Automated Valuation Models"],
+    },
+    {
+      title: "Cryptography & Privacy",
+      tag: "Security Primitives",
+      summary:
+        "Studying asymmetric/symmetric encryption primitives, secure hash algorithms, cryptographic protocols, and local-first zero-cloud data models.",
+      topics: ["Cryptographic Primitives", "Hashing & Verification", "Zero-Knowledge Concepts", "Client-Side Privacy"],
     },
   ],
   targetPrograms: [

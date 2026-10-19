@@ -5,6 +5,14 @@ A high-performance personal portfolio showcasing 5 software engineering projects
 - **Developer:** Ibnu Thyra Magani
 - **School:** BINUS SCHOOL Semarang (Cambridge International Curriculum)
 - **Live URL:** [https://lasserafim.github.io/ibnu-thyra-magani-portfolio/](https://lasserafim.github.io/ibnu-thyra-magani-portfolio/)
+---
+
+## 🔬 Technical Interests
+
+- **Data Science:** Scalable data ingestion pipelines, exploratory analysis, and feature extraction in Python (Pandas, NumPy).
+- **Probability & Stochastic Modeling:** Stochastic differential equations, Geometric Brownian Motion, and Monte Carlo risk simulations.
+- **Financial Technology (FinTech):** Orderbook market microstructure, Order Flow Imbalance (OFI), and quantitative valuation models.
+- **Cryptography & Security:** Encryption primitives, cryptographic hash verification, zero-knowledge concepts, and client-side privacy.
 
 ---
 
