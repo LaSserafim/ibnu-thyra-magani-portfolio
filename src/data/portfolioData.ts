@@ -49,7 +49,7 @@ export const PROFILE_DATA: ProfileData = {
   curriculum: "Cambridge International Curriculum",
   location: "Semarang, Indonesia",
   about:
-    "High school student interested in computer systems, quantitative analysis, and interactive educational software. I use modern web standards, Python, and AI coding tools to design, build, and deploy functional applications.",
+    "High school student interested in computer systems, financial econometrics, and interactive educational software. I use modern web standards, Python, and AI coding tools to design, build, and deploy functional applications.",
   technicalInterests: [
     {
       title: "Data Science",
@@ -69,8 +69,8 @@ export const PROFILE_DATA: ProfileData = {
       title: "Financial Technology",
       tag: "Market Microstructure",
       summary:
-        "Engineering real-time market data platforms, 15-level orderbook visualizers, and algorithmic quantitative valuation frameworks for capital markets.",
-      topics: ["Order Flow Imbalance (OFI)", "Depth of Market (DOM)", "BrokSum HHI Concentration", "Automated Valuation Models"],
+        "Engineering real-time market data platforms, range-based volatility estimators, and econometric valuation frameworks for capital markets.",
+      topics: ["Range-Based Volatility", "Cornish-Fisher VaR & CVaR", "Liquidity Proxies", "Automated Valuation Models"],
     },
     {
       title: "Cryptography & Privacy",
@@ -82,18 +82,13 @@ export const PROFILE_DATA: ProfileData = {
   ],
   targetPrograms: [
     {
-      institution: "Keio University",
-      program: "GIGA Program (SFC)",
-      field: "AI, Data Science & Network Systems",
-    },
-    {
       institution: "University of Aizu",
-      program: "ICT Global All-English",
+      program: "ICT Global All-English (SCSE)",
       field: "Computer Science & Software Engineering",
     },
     {
       institution: "University of Tsukuba",
-      program: "Interdisciplinary Engineering",
+      program: "Interdisciplinary Engineering (IDE)",
       field: "Computational Mechanics & Systems",
     },
     {
@@ -106,6 +101,16 @@ export const PROFILE_DATA: ProfileData = {
       program: "EBSE (CSCE)",
       field: "Computer Science & Communications Engineering",
     },
+    {
+      institution: "Ritsumeikan University",
+      program: "ISSE Course (College of Info Science)",
+      field: "Information Systems, Cloud Infrastructure & AI",
+    },
+    {
+      institution: "Tokyo International University",
+      program: "B.S. in Data Science & Artificial Intelligence",
+      field: "Machine Learning, Predictive Analytics & Applied AI",
+    },
   ],
 };
 
@@ -113,59 +118,74 @@ export const PROJECTS_DATA: Project[] = [
   {
     id: "mediaspine",
     title: "MediaSpine",
-    tagline: "In-browser clinical posture and spinal angle screener",
+    tagline: "In-browser clinical posture screener with local computer vision and biometric scoring",
     category: "Computer Vision / HealthTech",
     year: "2025–2026",
     githubUrl: "https://github.com/LaSserafim/mediaspine",
     liveUrl: "https://mediaspine.vercel.app",
     description:
-      "A real-time webcam posture screener built for the SpineSafe initiative. It measures the Craniovertebral Angle (CVA) between the tragus of the ear and C7 vertebra to detect Forward Head Posture (FHP). All image processing runs locally in the browser with zero video transmission to servers.",
-    techStack: ["Vanilla JavaScript (ES Modules)", "HTML5 Canvas API", "MediaPipe Pose", "Vercel"],
+      "A real-time webcam posture screening tool built for the SpineSafe NGO platform. Runs MediaPipe Pose locally via WebAssembly to measure neck deviation angles, shoulder tilt, head tilt, and postural sway. All video processing runs strictly on-device without cloud video uploads. Calculates a deterministic 0 to 100 posture score and plots cervical compressive force using the Kapandji-Hansraj model.",
+    techStack: ["Vanilla JavaScript (ES Modules)", "HTML5 Canvas API", "MediaPipe Pose (Wasm)", "DeepSeek V3", "Supabase", "Vercel"],
     keyFeatures: [
-      "Real-time 30+ FPS pose landmark tracking directly in browser memory",
-      "Calculates Craniovertebral Angle (CVA) and Coronal Shoulder Tilt with threshold warnings",
-      "Built without external NPM build tools to run instantly on low-spec school computers",
-      "Completely private: video stream never leaves the user device",
+      "Local pose estimation: BlazePose Lite runs via WebAssembly; frames are analyzed one by one and immediately discarded",
+      "Automatic view detection: classifies Sagittal (Profile) vs Coronal (Frontal) views by comparing horizontal shoulder separation",
+      "Five kinematic metrics: neck deviation angle, shoulder tilt, head tilt, rolling 30-frame live stability, and 3-second hold stability",
+      "Deterministic 0 to 100 scoring with calibrated penalties across 5 brackets (Normal, Very Mild, Mild, Moderate, Severe)",
+      "Kapandji-Hansraj cervical load curve plotting head tilt against cervical spinal compressive force (11 to 60 lbs)",
+      "Bilingual interface (English & Bahasa Indonesia) with DeepSeek AI summaries and targeted mobility exercises",
     ],
     codeSnippet: {
-      filename: "posture-math.js",
-      code: `// Calculate Craniovertebral Angle (CVA)
-export function calculateCVA(tragus, c7) {
-  const dx = tragus.x - c7.x;
-  const dy = tragus.y - c7.y;
-  const angleRad = Math.atan2(Math.abs(dy), Math.abs(dx));
-  const angleDeg = angleRad * (180 / Math.PI);
-  return {
-    angle: Math.round(angleDeg * 10) / 10,
-    isAbnormal: angleDeg < 50.0 // CVA < 50 deg indicates forward head posture
-  };
+      filename: "kinematics.js",
+      code: `// MediaSpine: View Classification & Neck Angle Calculation
+export function evaluateFrame(landmarks) {
+  const leftShoulder = landmarks[11];
+  const rightShoulder = landmarks[12];
+  
+  // Horizontal separation under 0.15 indicates profile view
+  const shoulderDist = Math.abs(leftShoulder.x - rightShoulder.x);
+  const isProfile = shoulderDist < 0.15;
+  
+  if (isProfile) {
+    // Pick side with higher landmark visibility (ear + shoulder)
+    const side = (landmarks[7].visibility + leftShoulder.visibility) > 
+                 (landmarks[8].visibility + rightShoulder.visibility) ? 'left' : 'right';
+    const ear = side === 'left' ? landmarks[7] : landmarks[8];
+    const shoulder = side === 'left' ? leftShoulder : rightShoulder;
+    
+    // Neck deviation from vertical plumb line
+    const dx = Math.abs(ear.x - shoulder.x);
+    const dy = Math.abs(ear.y - shoulder.y);
+    const neckAngle = Math.atan(dx / dy) * (180 / Math.PI);
+    return { mode: 'profile', neckAngle: Math.round(neckAngle * 10) / 10 };
+  }
+  return { mode: 'frontal' };
 }`,
       explanation:
-        "Trigonometric calculation of the CVA angle from MediaPipe 3D coordinate vectors.",
+        "Calculates sagittal neck deviation angle from vertical plumb line with automatic profile/frontal view classification.",
     },
     howBuiltWithAi: {
       promptingAndScaffolding:
-        "I researched orthopaedic literature for the clinical definition of CVA and FHP, then used Claude to scaffold the initial MediaPipe Pose callback listener and canvas coordinate math.",
+        "I formulated the biomechanical kinematic definitions from orthopedic literature (Kapandji-Hansraj cervical compression curves) and used Claude to scaffold the initial MediaPipe WebAssembly listener.",
       humanEngineeringAndRefinement:
-        "The raw model output suffered from coordinate jitter under uneven lighting. I implemented an Exponential Moving Average (EMA) smoothing buffer and stripped all heavyweight NPM packages down to a single vanilla ES module for zero-latency loading.",
+        "Model outputs had frame-rate lag and coordinate jitter. I implemented drop-frame throttling when the GPU is busy, built a rolling 30-frame stability buffer, and designed the deterministic 0-100 penalty system so clinical labels and numerical scores always agree.",
     },
   },
   {
     id: "the-link-reaction",
     title: "The Link Reaction",
-    tagline: "Interactive step-by-step cellular respiration simulation",
+    tagline: "Interactive 8-stage cellular respiration simulation aligned with Cambridge 9700",
     category: "Interactive Education / SVG",
     year: "2025",
     githubUrl: "https://github.com/LaSserafim/the-link-reaction",
     liveUrl: "https://the-link-reaction.vercel.app",
     description:
-      "An interactive visual guide built around the Cambridge International A-Level Biology (9700) curriculum. It breaks down the Link Reaction (oxidative decarboxylation of pyruvate into Acetyl-CoA) across 8 distinct sequential steps with atom-level tracking.",
-    techStack: ["HTML5", "CSS3", "Vanilla JavaScript", "Procedural SVG"],
+      "A cinematic, interactive educational simulation built directly around the Cambridge International A-Level Biology (9700 Section 12) curriculum. Explains the oxidative decarboxylation of pyruvate to Acetyl-CoA across 8 sequential stages, with strict stoichiometric carbon-atom tracking and procedural SVG animations.",
+    techStack: ["HTML5", "CSS3 Animation Engine", "Vanilla JavaScript (ES Modules)", "Procedural SVG"],
     keyFeatures: [
-      "8-stage interactive state machine with keyboard (arrow keys, space) and touch navigation",
-      "Strict stoichiometry tracking showing 3C Pyruvate splitting into 2C Acetyl group and 1C CO2",
-      "Procedural SVG animation showing Coenzyme A (CoA-SH) binding to the acetate group",
-      "Accessible design with step indicators, pause/play, and zoom controls",
+      "8-stage interactive finite state machine with keyboard (arrow keys, space) and mobile touch-swipe navigation",
+      "Stoichiometric carbon conservation: tracks 3C Pyruvate splitting into 2C Acetyl group and 1C Carbon Dioxide",
+      "Procedural SVG Bezier docking animations representing Coenzyme A (CoA-SH) sulfhydryl linkage formation",
+      "Accessible design with keyboard shortcuts, label toggles, stage progress bar, and pan/zoom viewport controls",
     ],
     codeSnippet: {
       filename: "state-engine.js",
@@ -181,55 +201,58 @@ export function nextReactionStage(currentStage) {
   return STAGES[Math.min(currentStage + 1, STAGES.length - 1)];
 }`,
       explanation:
-        "Finite state transition ensuring students step through the biochemical reaction in exact syllabus order.",
+        "Finite state transition engine enforcing exact biological step progression according to the Cambridge 9700 syllabus.",
     },
     howBuiltWithAi: {
       promptingAndScaffolding:
-        "I fed the Cambridge 9700 syllabus learning objectives to DeepSeek to draft the state transition table and list required coenzymes (NAD, CoA).",
+        "I provided the Cambridge A-Level Biology syllabus rubric to DeepSeek to draft the biochemical transition states and identify key enzyme cofactors.",
       humanEngineeringAndRefinement:
-        "AI models initially suggested heavy Three.js 3D models that lagged on mobile. I redirected the project to clean, resolution-independent SVG vector coordinates with CSS keyframes, ensuring instant loading on mobile phones and Chromebooks.",
+        "AI models suggested bulky WebGL 3D libraries that ran poorly on mobile devices. I rejected external dependencies and engineered lightweight procedural SVG coordinate transforms with native CSS keyframes for 60 FPS playback on any device.",
     },
   },
   {
     id: "futureas",
     title: "FutureAs",
-    tagline: "Automated equity valuation and quantitative simulation tool",
+    tagline: "Institutional equity research, stochastic modeling, and quantitative valuation terminal",
     category: "Quantitative Analytics / Python",
     year: "2025–2026",
     githubUrl: "https://github.com/LaSserafim/futureas",
     liveUrl: "https://futureas.vercel.app",
     description:
-      "A quantitative stock intelligence tool combining financial data ingestion with stochastic price path simulations. Runs Monte Carlo simulations, calculates Dollar-Cost Averaging (DCA) historical return curves, and tracks corporate insider transactions.",
-    techStack: ["Python 3.12", "FastAPI", "NumPy", "Yahoo Finance API", "React", "Tailwind CSS"],
+      "An institutional-grade quantitative valuation and equity intelligence terminal for US equities. Models future price distributions via a 10,000-path Geometric Brownian Motion (GBM) Monte Carlo engine, tests Cox-Ross-Rubinstein (CRR) binomial lattice convergence, and evaluates downside risk with Value-at-Risk (VaR) and Expected Shortfall (CVaR). Features 7 specialized analytical modules and an automated 15/15 test suite.",
+    techStack: ["Python 3.12", "FastAPI", "NumPy & SciPy", "Yahoo Finance API", "React", "Tailwind CSS", "Plotly"],
     keyFeatures: [
-      "1,000-path Geometric Brownian Motion (GBM) Monte Carlo simulation for 1-year price distributions",
-      "Historical Dollar-Cost Averaging (DCA) backtest calculator comparing lump-sum vs monthly purchases",
-      "Downside risk calculation: Maximum Drawdown (MDD), Value-at-Risk (VaR), and Sortino ratios",
-      "Automated SEC Form 4 insider transaction log parser",
+      "10,000-path Geometric Brownian Motion (GBM) simulation generating a full 252-day forward matrix in under 0.08s",
+      "Cox-Ross-Rubinstein (CRR) binomial lattice tree with continuity correction for multi-step valuation convergence",
+      "Non-parametric risk metrics: 95% Value-at-Risk (VaR), 95% Conditional Value-at-Risk (CVaR / Expected Shortfall)",
+      "Abramowitz & Stegun rational approximation for normal CDF inversion without external scipy runtime bloat",
+      "7 analytical modules: Valuation & Monte Carlo, Price & EMA Trend, Multi-Horizon Lump Sum vs DCA (1Y–10Y), Quant Probability, Drawdown Analysis, SEC Form 4/144 Insider Tracking, and Crash Radar",
+      "Automated test suite with 15/15 passing unit and integration tests (test_api.py, test_quant.py)",
     ],
     codeSnippet: {
       filename: "monte_carlo.py",
       code: `import numpy as np
 
-def run_gbm_simulation(last_price: float, mu: float, sigma: float, days: int = 252, paths: int = 1000):
+def run_gbm_simulation(last_price: float, mu: float, sigma: float, days: int = 252, paths: int = 10000):
+    """Vectorized Geometric Brownian Motion simulation via Itô's Lemma."""
     dt = 1.0 / 252.0
     drift = (mu - 0.5 * (sigma ** 2)) * dt
     diffusion = sigma * np.sqrt(dt) * np.random.normal(0, 1, (days, paths))
-    daily_returns = np.exp(drift + diffusion)
     
+    # Vectorized cumulative summation across simulation axis
+    log_returns = drift + diffusion
     price_paths = np.empty((days + 1, paths))
     price_paths[0] = last_price
-    for t in range(1, days + 1):
-        price_paths[t] = price_paths[t - 1] * daily_returns[t - 1]
+    price_paths[1:] = last_price * np.exp(np.cumsum(log_returns, axis=0))
     return price_paths`,
       explanation:
-        "Vectorized simulation of 1,000 potential future price paths using historical drift and annualized volatility.",
+        "Generates 10,000 stochastic price trajectories in <80ms using vectorized cumulative log-return sums.",
     },
     howBuiltWithAi: {
       promptingAndScaffolding:
-        "I used Claude to draft the initial NumPy matrix operations for Geometric Brownian Motion and set up the FastAPI endpoint structure.",
+        "I drafted the SDE mathematical foundations (Itô's lemma, Wiener processes) and used Claude to scaffold the NumPy matrix vectorization and FastAPI route handlers.",
       humanEngineeringAndRefinement:
-        "I audited the statistical equations to ensure annualization constants matched standard 252-trading-day conventions, and added Redis caching to prevent Yahoo Finance API rate limits.",
+        "I resolved the binomial tree lattice boundary errors by implementing the Cox-Ross-Rubinstein continuity correction, wrote the Abramowitz-Stegun rational approximation to remove heavy dependencies, and authored a 15-test automated verification suite.",
     },
   },
   {
@@ -240,13 +263,13 @@ def run_gbm_simulation(last_price: float, mu: float, sigma: float, days: int = 2
     year: "2024–2026",
     githubUrl: "https://github.com/LaSserafim/stock-intelligence-cloud",
     description:
-      "An automated daily market research pipeline. Every morning, it fetches data across FinViz, SEC filings, and Yahoo Finance, renders formatted PDF intelligence briefs using headless Chromium, and emails them automatically to subscribers.",
+      "An autonomous daily equity research pipeline that compiles and distributes publication-grade PDF intelligence dossiers every morning. Ingests data across FinViz, SEC EDGAR regulatory filings, and Yahoo Finance historical OHLCV. Employs dual-layer scheduling redundancy pairing local macOS launchd with GitHub Actions cloud cron.",
     techStack: ["Python 3.12", "Puppeteer (Headless Chrome)", "GitHub Actions", "macOS launchd", "SMTP"],
     keyFeatures: [
       "Dual-layer scheduler: runs locally via macOS launchd at 09:00 WIB with GitHub Actions cloud cron as fallback",
-      "Idempotent delivery guard using GitHub cache to ensure reports are never emailed twice",
-      "Automated HTML to vector PDF compiler with custom CSS print page breaks",
-      "Network recovery daemon that checks Wi-Fi connectivity before attempting email dispatch",
+      "Idempotent delivery guard using GitHub cache to ensure reports are never emailed twice on the same trading day",
+      "Automated HTML to vector PDF compiler using headless Chrome for Testing with precision CSS print media pagination",
+      "Network recovery daemon with retry loops that verifies connectivity before attempting remote data fetches or SMTP dispatch",
     ],
     codeSnippet: {
       filename: "run_pipeline.py",
@@ -274,34 +297,43 @@ def wait_for_network(max_retries=12, delay=5):
   {
     id: "quant-idx",
     title: "QUANT.IDX Terminal",
-    tagline: "Indonesian stock market orderbook and microstructure analytics terminal",
-    category: "Financial Microstructure / Full Stack",
+    tagline: "Quantitative equity research & econometric market terminal for the Indonesia Stock Exchange",
+    category: "Financial Econometrics / Full Stack",
     year: "2025–2026",
     githubUrl: "https://github.com/LaSserafim/quantidx",
     description:
-      "A quantitative market microstructure analytics terminal for the Indonesia Stock Exchange (IDX). It visualizes 15-level orderbook depth, computes Order Flow Imbalance (OFI), and calculates broker concentration using the Herfindahl-Hirschman Index (HHI).",
-    techStack: ["FastAPI (Python)", "WebGPU / Canvas", "TradingView Pro API", "Pandas", "Tailwind CSS"],
+      "An open-access quantitative finance and market terminal for the Indonesia Stock Exchange (IDX / Bursa Efek Indonesia). Integrates empirical financial econometrics, range-based volatility estimators, non-Gaussian tail risk modeling, liquidity proxies, and fundamental accounting ratios. Backed by FastAPI and live .JK market data.",
+    techStack: ["Python 3.12", "FastAPI", "NumPy & Pandas", "TradingView Pro Widget", "Chart.js", "Tailwind CSS"],
     keyFeatures: [
-      "15-level Depth of Market (DOM) bid/ask volume ladder",
-      "Order Flow Imbalance (OFI) indicator tracking top-of-book size changes between ticks",
-      "Broker Summary (BrokSum) volume concentration index (HHI) for institutional activity",
-      "Integrated TradingView lightweight charting with custom overlay indicators",
+      "Return distribution moments: calculates sample mean, volatility, skewness, excess kurtosis, and Jarque-Bera (1987) normality p-values",
+      "Range-based volatility estimators: Parkinson (1980) High-Low, Garman-Klass (1980) OHLC, and Rogers-Satchell (1991) non-zero drift volatility",
+      "Non-Gaussian downside risk: Cornish-Fisher expansion Value-at-Risk (adjusting for skewness and fat tails) and Expected Shortfall (CVaR)",
+      "Empirical liquidity proxies: Corwin-Schultz (2012) Bid-Ask Spread estimator from daily high/low prices and Amihud (2002) Illiquidity Ratio",
+      "30-day forward Monte Carlo Geometric Brownian Motion (GBM) simulation cone",
+      "DeepSeek AI structured econometric research memorandums with deterministic fallback synthesizer",
     ],
     codeSnippet: {
-      filename: "ofi_engine.py",
-      code: `def calculate_ofi(bid_p, bid_v, ask_p, ask_v, prev_bid_p, prev_bid_v, prev_ask_p, prev_ask_v):
-    # Order Flow Imbalance (OFI) delta computation
-    delta_bid = bid_v if bid_p > prev_bid_p else (bid_v - prev_bid_v if bid_p == prev_bid_p else 0)
-    delta_ask = ask_v if ask_p < prev_ask_p else (ask_v - prev_ask_v if ask_p == prev_ask_p else 0)
-    return delta_bid - delta_ask`,
+      filename: "quant_engine.py",
+      code: `import numpy as np
+
+def parkinson_volatility(high: np.ndarray, low: np.ndarray, trading_days: int = 252) -> float:
+    """Parkinson (1980) extreme-value realized volatility estimator.
+    Provides ~5x greater statistical efficiency than close-to-close estimators.
+    """
+    n = len(high)
+    if n == 0:
+        return 0.0
+    log_hl = np.log(high / low)
+    sigma_sq = (1.0 / (4.0 * np.log(2.0) * n)) * np.sum(log_hl ** 2)
+    return float(np.sqrt(sigma_sq * trading_days))`,
       explanation:
-        "Calculates net supply and demand pressure at the best bid and ask quotes between consecutive updates.",
+        "Computes extreme-value volatility using daily high/low price dispersion, offering 5x higher efficiency than close-to-close methods.",
     },
     howBuiltWithAi: {
       promptingAndScaffolding:
-        "I explained Indonesian broker summary mechanisms to AI models and had them help draft the mathematical HHI concentration formulas.",
+        "I researched peer-reviewed econometric papers (Parkinson 1980, Garman-Klass 1980, Corwin-Schultz 2012) and used AI to assist in translating the mathematical summations into vectorized NumPy formulas.",
       humanEngineeringAndRefinement:
-        "I tuned the data structures using Pandas and NumPy vectors to ensure calculations run in under 5 milliseconds on live tick feeds.",
+        "I validated that all metrics rely strictly on empirical trading data (eliminating simulated orderbook ladders), implemented the closed-form Chi-Square p-value for the Jarque-Bera normality test, and built the high-density single-page interface with TradingView Pro charting.",
     },
   },
 ];
